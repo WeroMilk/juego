@@ -87,6 +87,12 @@
   opacity: 1;
 }
 
+/* No mostrar barra/borde dorado en objetivo-energia para evitar el amarillo bajo la carta */
+.hero-slot.objetivo-energia::after {
+  opacity: 0 !important;
+  display: none !important;
+}
+
 @keyframes borderGlow {
   0% { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }

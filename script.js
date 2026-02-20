@@ -207,17 +207,55 @@
       safeOn('btn-end-turn', 'click', terminarTurno);
       safeOn('btn-rendirse', 'click', rendirse);
       
-      // Modal de configuración
+      // Modal de configuración: al abrir, sincronizar con estado actual
+      function sincronizarModalConfiguracion() {
+        if (typeof Sounds !== 'undefined') {
+          var s = document.getElementById('setting-sound');
+          var sfx = document.getElementById('setting-sfx');
+          var mus = document.getElementById('setting-music');
+          var vol = document.getElementById('setting-volume');
+          var volVal = document.getElementById('volume-value');
+          if (s) s.checked = (Sounds.effectsEnabled !== false && Sounds.musicaEnabled !== false);
+          if (sfx) sfx.checked = Sounds.effectsEnabled !== false;
+          if (mus) mus.checked = Sounds.musicaEnabled !== false;
+          if (vol) vol.value = Math.round((Sounds.getVolume ? Sounds.getVolume() : 0.8) * 100);
+          if (volVal) volVal.textContent = (vol ? vol.value : 80) + '%';
+        }
+        if (typeof window.animationsEnabled !== 'undefined') {
+          var anim = document.getElementById('setting-animations');
+          if (anim) anim.checked = window.animationsEnabled !== false;
+        } else {
+          try {
+            var stored = localStorage.getItem('dioses_animaciones');
+            window.animationsEnabled = stored === null || stored === '1';
+          } catch (e) { window.animationsEnabled = true; }
+          var anim = document.getElementById('setting-animations');
+          if (anim) anim.checked = window.animationsEnabled;
+        }
+        if (typeof ParticleSystem !== 'undefined') {
+          var part = document.getElementById('setting-particles');
+          if (part) part.checked = ParticleSystem.enabled !== false;
+        }
+        try {
+          var vib = localStorage.getItem('dioses_vibracion');
+          window.vibrationEnabled = vib === null || vib === '1';
+        } catch (e) { window.vibrationEnabled = true; }
+        var settingVibration = document.getElementById('setting-vibration');
+        if (settingVibration) settingVibration.checked = window.vibrationEnabled !== false;
+      }
       safeOn('btn-settings', 'click', function() {
         var modal = document.getElementById('settings-modal');
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+          sincronizarModalConfiguracion();
+          modal.classList.remove('hidden');
+        }
       });
       safeOn('btn-settings-close', 'click', function() {
         var modal = document.getElementById('settings-modal');
         if (modal) modal.classList.add('hidden');
       });
-      
-      // Configuraciones de audio
+
+      // Configuraciones de audio (todas surten efecto en el juego)
       var settingSound = document.getElementById('setting-sound');
       var settingSfx = document.getElementById('setting-sfx');
       var settingMusic = document.getElementById('setting-music');
@@ -225,11 +263,13 @@
       var volumeValue = document.getElementById('volume-value');
       var settingAnimations = document.getElementById('setting-animations');
       var settingParticles = document.getElementById('setting-particles');
-      
+      var settingVibration = document.getElementById('setting-vibration');
+
       if (settingSound) {
         settingSound.addEventListener('change', function() {
           var enabled = this.checked;
           if (typeof Sounds !== 'undefined') {
+            Sounds.enabled = enabled;
             Sounds.setMusicaEnabled(enabled);
             Sounds.setEffectsEnabled(enabled);
           }
@@ -237,42 +277,62 @@
           if (settingMusic) settingMusic.checked = enabled;
         });
       }
-      
       if (settingSfx) {
         settingSfx.addEventListener('change', function() {
           if (typeof Sounds !== 'undefined') Sounds.setEffectsEnabled(this.checked);
         });
       }
-      
       if (settingMusic) {
         settingMusic.addEventListener('change', function() {
           if (typeof Sounds !== 'undefined') Sounds.setMusicaEnabled(this.checked);
         });
       }
-      
       if (settingVolume && volumeValue) {
         settingVolume.addEventListener('input', function() {
           var vol = parseInt(this.value, 10);
           volumeValue.textContent = vol + '%';
-          if (typeof Sounds !== 'undefined' && Sounds.setVolume) {
-            Sounds.setVolume(vol / 100);
-          }
+          if (typeof Sounds !== 'undefined' && Sounds.setVolume) Sounds.setVolume(vol / 100);
         });
       }
-      
       if (settingAnimations) {
         settingAnimations.addEventListener('change', function() {
           window.animationsEnabled = this.checked;
+          try { localStorage.setItem('dioses_animaciones', this.checked ? '1' : '0'); } catch (e) {}
         });
       }
-      
       if (settingParticles) {
         settingParticles.addEventListener('change', function() {
-          if (typeof ParticleSystem !== 'undefined') {
-            ParticleSystem.enabled = this.checked;
-          }
+          if (typeof ParticleSystem !== 'undefined') ParticleSystem.enabled = this.checked;
+          try { localStorage.setItem('dioses_particulas', this.checked ? '1' : '0'); } catch (e) {}
         });
       }
+      if (settingVibration) {
+        settingVibration.addEventListener('change', function() {
+          window.vibrationEnabled = this.checked;
+          try { localStorage.setItem('dioses_vibracion', this.checked ? '1' : '0'); } catch (e) {}
+        });
+      }
+      // Aplicar valores guardados al cargar (animaciones, partículas, vibración)
+      (function() {
+        try {
+          var a = localStorage.getItem('dioses_animaciones');
+          window.animationsEnabled = a === null ? true : a === '1';
+        } catch (e) { window.animationsEnabled = true; }
+        try {
+          var p = localStorage.getItem('dioses_particulas');
+          if (typeof ParticleSystem !== 'undefined') ParticleSystem.enabled = p === null ? true : p === '1';
+        } catch (e) {}
+        try {
+          var v = localStorage.getItem('dioses_vibracion');
+          window.vibrationEnabled = v === null ? true : v === '1';
+        } catch (e) { window.vibrationEnabled = true; }
+      })();
+      window.vibrarSiPermitido = function(patron) {
+        try {
+          if (window.vibrationEnabled !== false && navigator.vibrate)
+            navigator.vibrate(typeof patron === 'number' ? patron : (Array.isArray(patron) ? patron : 50));
+        } catch (e) {}
+      };
       
       safeOn('selection-cancel', 'click', function () { var m = document.getElementById('selection-modal'); if (m) m.classList.add('hidden'); });
       safeOn('btn-volver-menu', 'click', function () { if (typeof Sounds !== 'undefined' && Sounds.musica) Sounds.musica(false); volverMenuTrasPartida(); });
@@ -1549,11 +1609,17 @@
   }
 
   function turnoIA() {
-    const s = Game.estado;
+    let s;
+    try {
+      s = Game.estado;
+    } catch (e) {
+      if (typeof console !== 'undefined') console.error('turnoIA: estado inválido', e);
+      return;
+    }
     if (!s || s.turnoActual !== 'rival' || s.ganador) return;
-    
+
     quitarResaltadoIA();
-    
+
     if (s.turnoPerdido && s.turnoPerdido.rival > 0) {
       Game.terminarTurno();
       UI.renderizarTablero();
@@ -1562,7 +1628,17 @@
       return;
     }
     
-    const accion = IA.jugar();
+    let accion;
+    try {
+      accion = IA.jugar();
+    } catch (e) {
+      if (typeof console !== 'undefined') console.error('turnoIA: IA.jugar error', e);
+      Game.terminarTurno();
+      UI.renderizarTablero();
+      comprobarGanador();
+      if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+      return;
+    }
     if (!accion) {
       Game.terminarTurno();
       UI.renderizarTablero();
@@ -1593,10 +1669,19 @@
         // Fase 2: Resaltar héroe objetivo
         resaltarElementoIA(heroeEl, 'objetivo');
         setTimeout(() => {
-          // Fase 3: Ejecutar acción
           quitarResaltadoIA();
-          const result = Game.ponerEnergia('rival', accion.indiceMano, heroeSlot);
-          if (result.ok) {
+          let result;
+          try {
+            result = Game.ponerEnergia('rival', accion.indiceMano, heroeSlot);
+          } catch (e) {
+            if (typeof console !== 'undefined') console.error('turnoIA energia', e);
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            comprobarGanador();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+            return;
+          }
+          if (result && result.ok) {
             UI.renderizarTablero();
             setTimeout(turnoIA, delayHumano(700, 400));
           } else {
@@ -1620,8 +1705,17 @@
         resaltarElementoIA(heroeEl, 'objetivo');
         setTimeout(() => {
           quitarResaltadoIA();
-          const result = Game.ponerEnergiaDesdeSoporte('rival', accion.indiceSoporte, heroeSlot);
-          if (result.ok) {
+          let result;
+          try {
+            result = Game.ponerEnergiaDesdeSoporte('rival', accion.indiceSoporte, heroeSlot);
+          } catch (e) {
+            if (typeof console !== 'undefined') console.error('turnoIA energia_soporte', e);
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+            return;
+          }
+          if (result && result.ok) {
             UI.renderizarTablero();
             setTimeout(turnoIA, delayHumano(700, 400));
           } else {
@@ -1640,8 +1734,17 @@
       resaltarElementoIA(heroeEl, 'seleccion');
       setTimeout(() => {
         quitarResaltadoIA();
-        const result = Game.ponerBocaAbajoEnHeroe('rival', accion.indiceBocaAbajo, accion.heroeSlot);
-        if (result.ok) {
+        let result;
+        try {
+          result = Game.ponerBocaAbajoEnHeroe('rival', accion.indiceBocaAbajo, accion.heroeSlot);
+        } catch (e) {
+          if (typeof console !== 'undefined') console.error('turnoIA boca_abajo', e);
+          Game.terminarTurno();
+          UI.renderizarTablero();
+          if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+          return;
+        }
+        if (result && result.ok) {
           UI.renderizarTablero();
           setTimeout(turnoIA, delayHumano(700, 400));
         } else {
@@ -1662,8 +1765,17 @@
         resaltarElementoIA(soporteEl, 'objetivo');
         setTimeout(() => {
           quitarResaltadoIA();
-          const result = Game.ponerEnSoporteDesdeMano('rival', accion.indiceMano, accion.slotSoporte);
-          if (result.ok) {
+          let result;
+          try {
+            result = Game.ponerEnSoporteDesdeMano('rival', accion.indiceMano, accion.slotSoporte);
+          } catch (e) {
+            if (typeof console !== 'undefined') console.error('turnoIA soporte', e);
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+            return;
+          }
+          if (result && result.ok) {
             UI.renderizarTablero();
             setTimeout(turnoIA, delayHumano(700, 400));
           } else {
@@ -1686,11 +1798,19 @@
         // Fase 2: Resaltar objetivo (la IA "selecciona" a quién atacar)
         resaltarElementoIA(defensorEl, 'objetivo');
         setTimeout(() => {
-          // Fase 3: Ejecutar ataque
           quitarResaltadoIA();
-          
-          const result = Game.atacar('rival', accion.atacanteSlot, accion.defensorSlot);
-          if (!result.ok) {
+          let result;
+          try {
+            result = Game.atacar('rival', accion.atacanteSlot, accion.defensorSlot);
+          } catch (e) {
+            if (typeof console !== 'undefined') console.error('turnoIA atacar', e);
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            comprobarGanador();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+            return;
+          }
+          if (!result || !result.ok) {
             Game.terminarTurno();
             UI.renderizarTablero();
             if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
@@ -1738,26 +1858,42 @@
           if (typeof Sounds !== 'undefined' && Sounds.atacar) Sounds.atacar();
           UI.animarAtaque(atacanteEl, defensorEl, () => {
             function rest() {
-              var aliadoMuerto = result.defensorDestruido;
-              var enemigoMuerto = result.atacanteDestruido;
-              function continuar() {
-                if (result.luciferQuemar && Game.estado.player.mano.length > 0) {
-                  const idx = Math.floor(Math.random() * Game.estado.player.mano.length);
-                  Game.quemarCartaDe('player', idx);
+              try {
+                var aliadoMuerto = result.defensorDestruido;
+                var enemigoMuerto = result.atacanteDestruido;
+                function continuar() {
+                  try {
+                    if (result.luciferQuemar && Game.estado && Game.estado.player && Game.estado.player.mano.length > 0) {
+                      const idx = Math.floor(Math.random() * Game.estado.player.mano.length);
+                      Game.quemarCartaDe('player', idx);
+                    }
+                    UI.renderizarTablero();
+                    comprobarGanador();
+                    if (Game.estado && Game.estado.ganador) return;
+                    if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(900, 500));
+                  } catch (err) {
+                    if (typeof console !== 'undefined') console.error('turnoIA atacar continuar', err);
+                    Game.terminarTurno();
+                    UI.renderizarTablero();
+                    comprobarGanador();
+                    if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+                  }
                 }
+                if (aliadoMuerto) {
+                  UI.mostrarMensajeHeroeAsesinado('aliado');
+                  setTimeout(continuar, 1800);
+                } else if (enemigoMuerto) {
+                  UI.mostrarMensajeHeroeAsesinado('enemigo');
+                  setTimeout(continuar, 1800);
+                } else {
+                  continuar();
+                }
+              } catch (err) {
+                if (typeof console !== 'undefined') console.error('turnoIA atacar rest', err);
+                Game.terminarTurno();
                 UI.renderizarTablero();
                 comprobarGanador();
-                if (Game.estado.ganador) return;
-                setTimeout(turnoIA, delayHumano(900, 500));
-              }
-              if (aliadoMuerto) {
-                UI.mostrarMensajeHeroeAsesinado('aliado');
-                setTimeout(continuar, 1800);
-              } else if (enemigoMuerto) {
-                UI.mostrarMensajeHeroeAsesinado('enemigo');
-                setTimeout(continuar, 1800);
-              } else {
-                continuar();
+                if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
               }
             }
             if (result.curacion != null) UI.animarCuracion(defensorEl, rest);
@@ -1778,10 +1914,51 @@
         if (heroeEl) resaltarElementoIA(heroeEl, 'objetivo');
         setTimeout(() => {
           quitarResaltadoIA();
-          const parametros = accion.heroeSlot != null ? { heroeSlot: accion.heroeSlot } : {};
-          const result = Game.activarTrampa('rival', accion.slotBocaAbajo, parametros);
-          if (result.ok) {
+          let result;
+          try {
+            const parametros = accion.heroeSlot != null ? { heroeSlot: accion.heroeSlot } : {};
+            result = Game.activarTrampa('rival', accion.slotBocaAbajo, parametros);
+          } catch (e) {
+            if (typeof console !== 'undefined') console.error('turnoIA activar_trampa', e);
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+            return;
+          }
+          if (result && result.ok) {
             if (result.curacion != null && typeof GameLog !== 'undefined') GameLog.addHeal(result.jugadorCurado, result.heroeNombre, result.curacion);
+            UI.renderizarTablero();
+            setTimeout(turnoIA, delayHumano(700, 400));
+          } else {
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+          }
+        }, delayHumano(500, 300));
+      }, delayHumano(600, 300));
+      return;
+    }
+
+    if (accion.tipo === 'atacar_soporte') {
+      const atacanteEl = getHeroeElemento('rival', accion.atacanteSlot);
+      const soporteEl = getSoporteElemento('player', accion.slotSoporte);
+      resaltarElementoIA(atacanteEl, 'seleccion');
+      setTimeout(() => {
+        if (soporteEl) resaltarElementoIA(soporteEl, 'objetivo');
+        setTimeout(() => {
+          quitarResaltadoIA();
+          let result;
+          try {
+            result = Game.atacarSoporte('rival', accion.atacanteSlot, accion.slotSoporte);
+          } catch (e) {
+            if (typeof console !== 'undefined') console.error('turnoIA atacar_soporte', e);
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            comprobarGanador();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+            return;
+          }
+          if (result && result.ok) {
             UI.renderizarTablero();
             setTimeout(turnoIA, delayHumano(700, 400));
           } else {
@@ -1803,9 +1980,18 @@
         if (heroeEl) resaltarElementoIA(heroeEl, 'objetivo');
         setTimeout(() => {
           quitarResaltadoIA();
-          const parametros = accion.heroeSlot != null ? { heroeSlot: accion.heroeSlot } : {};
-          const result = Game.usarEfectoDesdeMano('rival', accion.indiceMano, parametros);
-          if (result.ok) {
+          let result;
+          try {
+            const parametros = accion.heroeSlot != null ? { heroeSlot: accion.heroeSlot } : {};
+            result = Game.usarEfectoDesdeMano('rival', accion.indiceMano, parametros);
+          } catch (e) {
+            if (typeof console !== 'undefined') console.error('turnoIA usar_efecto_mano', e);
+            Game.terminarTurno();
+            UI.renderizarTablero();
+            if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));
+            return;
+          }
+          if (result && result.ok) {
             if (result.curacion != null && typeof GameLog !== 'undefined') GameLog.addHeal(result.jugadorCurado, result.heroeNombre, result.curacion);
             UI.renderizarTablero();
             setTimeout(turnoIA, delayHumano(700, 400));
@@ -1818,7 +2004,8 @@
       }, delayHumano(600, 300));
       return;
     }
-    
+
+    // Cualquier otro tipo de acción no manejada: terminar turno para no trabar
     Game.terminarTurno();
     UI.renderizarTablero();
     if (Game.estado && Game.estado.turnoActual === 'rival') setTimeout(turnoIA, delayHumano(600, 300));

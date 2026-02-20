@@ -14,11 +14,19 @@
       return true;
     }
     if (accion.tipo === 'energia') {
-      const r = Game.ponerEnergia(jugador, accion.indiceMano, accion.heroeSlot);
+      const r = Game.ponerEnergia(jugador, accion.indiceMano, accion.heroeSlot != null ? accion.heroeSlot : 0);
+      return r && r.ok;
+    }
+    if (accion.tipo === 'energia_soporte') {
+      const r = Game.ponerEnergiaDesdeSoporte(jugador, accion.indiceSoporte, accion.heroeSlot != null ? accion.heroeSlot : 0);
       return r && r.ok;
     }
     if (accion.tipo === 'boca_abajo') {
       const r = Game.ponerBocaAbajoEnHeroe(jugador, accion.indiceBocaAbajo, accion.heroeSlot);
+      return r && r.ok;
+    }
+    if (accion.tipo === 'soporte') {
+      const r = Game.ponerEnSoporteDesdeMano(jugador, accion.indiceMano, accion.slotSoporte);
       return r && r.ok;
     }
     if (accion.tipo === 'atacar') {
@@ -30,6 +38,20 @@
         if (mano.length > 0) Game.quemarCartaDe(oponente, Math.floor(Math.random() * mano.length));
       }
       return true;
+    }
+    if (accion.tipo === 'atacar_soporte') {
+      const r = Game.atacarSoporte(jugador, accion.atacanteSlot, accion.slotSoporte);
+      return r && r.ok;
+    }
+    if (accion.tipo === 'activar_trampa') {
+      const param = accion.heroeSlot != null ? { heroeSlot: accion.heroeSlot } : {};
+      const r = Game.activarTrampa(jugador, accion.slotBocaAbajo, param);
+      return r && r.ok;
+    }
+    if (accion.tipo === 'usar_efecto_mano') {
+      const param = accion.heroeSlot != null ? { heroeSlot: accion.heroeSlot } : {};
+      const r = Game.usarEfectoDesdeMano(jugador, accion.indiceMano, param);
+      return r && r.ok;
     }
     return false;
   }

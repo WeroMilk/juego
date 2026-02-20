@@ -190,12 +190,12 @@ const Game = {
     const j = jugador === 'player' ? s.player : s.rival;
     const oponente = jugador === 'player' ? 'rival' : 'player';
 
-    let heroe = j.mano.find(c => c.tipo === 'heroe');
-    if (heroe) {
-      j.mano = j.mano.filter(c => c !== heroe);
+    const esHeroe = (c) => c && (c.tipo === 'heroe' || (c.ataque != null && (c.vidaMax != null || c.vida != null)));
+    const idxMano = (j.mano && j.mano.length) ? j.mano.findIndex(esHeroe) : -1;
+    if (idxMano >= 0) {
+      const heroe = j.mano.splice(idxMano, 1)[0];
       const vidaMax = heroe.vidaMax || heroe.vida || 1;
       j.heroes[slotIndex] = { ...heroe, vida: vidaMax, vidaMax: vidaMax, _vidaMaxOriginal: vidaMax, paralizado: 0, electrocutado: 0, usadoHabilidad: false, fenixUsado: false, energiaStack: [], faceDownStack: [], defensaExtra: 0 };
-      // Re-aplicar efectos de soporte después de reemplazar héroe
       this.aplicarEfectosSoporte(jugador);
       return { ok: true, nuevoHeroe: j.heroes[slotIndex] };
     }
@@ -203,7 +203,7 @@ const Game = {
     // Robar hasta encontrar héroe
     while (s.mazo.length > 0) {
       const robada = s.mazo.shift();
-      if (robada.tipo === 'heroe') {
+      if (robada && (robada.tipo === 'heroe' || (robada.ataque != null && (robada.vidaMax != null || robada.vida != null)))) {
         const vidaMax = robada.vidaMax || robada.vida || 1;
         j.heroes[slotIndex] = { ...robada, vida: vidaMax, vidaMax: vidaMax, _vidaMaxOriginal: vidaMax, paralizado: 0, electrocutado: 0, usadoHabilidad: false, fenixUsado: false, energiaStack: [], faceDownStack: [], defensaExtra: 0 };
         // Re-aplicar efectos de soporte después de reemplazar héroe
@@ -512,8 +512,6 @@ const Game = {
       } else {
         s.descarte.push(faceDown);
       }
-      this.robarHastaMano(atacanteJugador);
-      this.robarHastaMano(defensorJugador);
       const resultado = { ok: true, cartaRevelada: faceDown, atacanteDestruido: heroeAtacante.vida <= 0 };
       if (faceDown.efectoId === 'escudo') {
         let danoQueSería = (heroeAtacante.ataque || 0) + (heroeAtacante.ataqueExtra || 0);
@@ -645,8 +643,6 @@ const Game = {
       resultado.reemplazoAtacante = reemplazoAtacante;
     }
 
-    this.robarHastaMano(atacanteJugador);
-    this.robarHastaMano(defensorJugador);
     return resultado;
   },
 
@@ -744,7 +740,6 @@ const Game = {
     if (indice < 0 || indice >= j.mano.length) return { ok: false };
     const carta = j.mano.splice(indice, 1)[0];
     s.descarte.push(carta);
-    this.robarHastaMano(jugador);
     return { ok: true };
   },
 
@@ -813,11 +808,22 @@ const Game = {
     const acciones = [];
 
     for (let m = 0; m < j.mano.length; m++) {
-      if (j.mano[m].tipo === 'energia') {
+      if (j.mano[m] && j.mano[m].tipo === 'energia') {
         for (let h = 0; h < j.heroes.length; h++) {
           const heroe = j.heroes[h];
           if (heroe && heroe.vida > 0 && (heroe.energiaStack ? heroe.energiaStack.length < maxEnergiaHeroe(heroe) : true))
             acciones.push({ tipo: 'energia', indiceMano: m, heroeSlot: h });
+        }
+      }
+    }
+    // Energía desde zona de soporte (carta ya boca arriba tipo energía)
+    for (let b = 0; b < (j.bocaAbajo || []).length; b++) {
+      const cartaSoporte = j.bocaAbajo[b];
+      if (cartaSoporte && cartaSoporte.tipo === 'energia') {
+        for (let h = 0; h < j.heroes.length; h++) {
+          const heroe = j.heroes[h];
+          if (heroe && heroe.vida > 0 && (heroe.energiaStack ? heroe.energiaStack.length < maxEnergiaHeroe(heroe) : true))
+            acciones.push({ tipo: 'energia_soporte', indiceSoporte: b, heroeSlot: h });
         }
       }
     }

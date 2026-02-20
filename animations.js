@@ -48,14 +48,14 @@ const Animations = {
     requestAnimationFrame(shake);
   },
 
-  // Shake más intenso para momentos críticos
+  // Shake moderado para momentos críticos (sin que tiemblé todo)
   heavyScreenShake() {
-    this.screenShake(20, 500, true);
+    this.screenShake(6, 250, true);
   },
 
-  // Shake suave para feedback
+  // Shake muy suave para feedback (casi imperceptible)
   lightScreenShake() {
-    this.screenShake(5, 150, true);
+    this.screenShake(2, 80, true);
   },
 
   // ==========================================
@@ -294,8 +294,8 @@ const Animations = {
       attackerEl.style.transform = `translate(${lungeX}px, ${lungeY}px) scale(1.05)`;
       
       setTimeout(() => {
-        // Impacto
-        this.screenShake(8, 200);
+        // Impacto (shake suave para no hacer temblar toda la pantalla)
+        this.screenShake(4, 120, true);
         
         // Obtener posición del centro del defensor
         const impactX = defenderRect.left + defenderRect.width / 2;
@@ -332,10 +332,10 @@ const Animations = {
     // Efecto visual en el elemento
     element.classList.add('damage-flash');
     
-    // Shake del elemento
+    // Shake suave del elemento (solo la carta, sin exagerar)
     const originalTransform = element.style.transform;
     let shakeCount = 0;
-    const maxShakes = 6;
+    const maxShakes = 3;
     
     const doShake = () => {
       if (shakeCount >= maxShakes) {
@@ -345,7 +345,7 @@ const Animations = {
         return;
       }
       
-      const intensity = 8 * (1 - shakeCount / maxShakes);
+      const intensity = 3 * (1 - shakeCount / maxShakes);
       const offsetX = (Math.random() - 0.5) * 2 * intensity;
       const offsetY = (Math.random() - 0.5) * 2 * intensity;
       element.style.transform = `${originalTransform} translate(${offsetX}px, ${offsetY}px)`;

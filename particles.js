@@ -10,6 +10,7 @@ const ParticleSystem = {
   emitters: [],
   running: false,
   lastTime: 0,
+  enabled: true,
 
   // Configuración de rendimiento
   config: {
@@ -251,6 +252,7 @@ const ParticleSystem = {
 
   // Explosión de impacto (ataque)
   impactExplosion(x, y, color = '#ff6b35', scale = 1) {
+    if (this.enabled === false) return;
     this.init();
     
     // Partículas principales de explosión
@@ -313,6 +315,7 @@ const ParticleSystem = {
 
   // Efecto de daño (números y sangre)
   damageEffect(x, y, damage, isCritical = false) {
+    if (this.enabled === false) return;
     this.init();
     
     const color = isCritical ? '#ff0000' : '#ff4444';
@@ -340,6 +343,7 @@ const ParticleSystem = {
 
   // Efecto de curación
   healEffect(x, y, amount) {
+    if (this.enabled === false) return;
     this.init();
     
     // Partículas verdes ascendentes
@@ -465,6 +469,7 @@ const ParticleSystem = {
 
   // Efecto de héroe derrotado
   heroDefeated(x, y, isEnemy = true) {
+    if (this.enabled === false) return;
     this.init();
     
     const color = isEnemy ? '#ffd700' : '#ef4444';
@@ -498,6 +503,7 @@ const ParticleSystem = {
 
   // Efecto de victoria
   victoryBurst(x, y) {
+    if (this.enabled === false) return;
     this.init();
     
     // Explosión dorada masiva

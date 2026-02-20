@@ -40,8 +40,14 @@ const IA = {
     const s = Game.estado;
     if (!s || s.turnoActual !== 'rival' || s.ganador) return null;
 
-    const acciones = Game.getAccionesPosibles('rival');
-    if (acciones.length === 0) return { tipo: 'terminar_turno' };
+    let acciones;
+    try {
+      acciones = Game.getAccionesPosibles('rival');
+    } catch (e) {
+      if (typeof console !== 'undefined') console.error('IA.jugar getAccionesPosibles', e);
+      return { tipo: 'terminar_turno' };
+    }
+    if (!acciones || !Array.isArray(acciones) || acciones.length === 0) return { tipo: 'terminar_turno' };
 
     switch (this.dificultad) {
       case 'facil':

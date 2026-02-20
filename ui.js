@@ -1004,32 +1004,37 @@ const UI = {
   },
 
   animarAtaque(atacanteSlotEl, defensorSlotEl, cb, dano = 0) {
-    // Usar el sistema de animaciones premium si está disponible
+    if (typeof window.vibrarSiPermitido === 'function') window.vibrarSiPermitido(50);
+    const invocarCb = () => { try { if (cb) cb(); } catch (e) { if (typeof console !== 'undefined') console.error('animarAtaque callback', e); } };
+    if (typeof window.animationsEnabled === 'boolean' && !window.animationsEnabled) {
+      invocarCb();
+      return;
+    }
     if (typeof Animations !== 'undefined' && Animations.attackLunge) {
-      Animations.attackLunge(atacanteSlotEl, defensorSlotEl, () => {
-        if (defensorSlotEl && dano > 0) {
-          const rect = defensorSlotEl.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          
-          // Mostrar número de daño flotante
-          Animations.showFloatingNumber(centerX, centerY - 20, dano, dano >= 5 ? 'critical' : 'damage');
-          
-          // Efecto de partículas de daño
-          if (typeof ParticleSystem !== 'undefined') {
-            ParticleSystem.damageEffect(centerX, centerY, dano);
-          }
-        }
-        if (cb) cb();
-      });
+      try {
+        Animations.attackLunge(atacanteSlotEl, defensorSlotEl, () => {
+          try {
+            if (defensorSlotEl && dano > 0) {
+              const rect = defensorSlotEl.getBoundingClientRect();
+              const centerX = rect.left + rect.width / 2;
+              const centerY = rect.top + rect.height / 2;
+              Animations.showFloatingNumber(centerX, centerY - 20, dano, dano >= 5 ? 'critical' : 'damage');
+              if (typeof ParticleSystem !== 'undefined') ParticleSystem.damageEffect(centerX, centerY, dano);
+            }
+          } catch (e) { /* no bloquear callback */ }
+          invocarCb();
+        });
+      } catch (e) {
+        if (typeof console !== 'undefined') console.error('animarAtaque attackLunge', e);
+        invocarCb();
+      }
     } else {
-      // Fallback al sistema original
       if (atacanteSlotEl) atacanteSlotEl.classList.add('ataque-anim');
       if (defensorSlotEl) defensorSlotEl.classList.add('recibir-dano');
       setTimeout(() => {
         if (atacanteSlotEl) atacanteSlotEl.classList.remove('ataque-anim');
         if (defensorSlotEl) defensorSlotEl.classList.remove('recibir-dano');
-        if (cb) cb();
+        invocarCb();
       }, 650);
     }
   },
@@ -1112,10 +1117,19 @@ const UI = {
   },
 
   mostrarMensajeHeroeAsesinado(tipo, slotEl = null) {
+    if (typeof window.vibrarSiPermitido === 'function') window.vibrarSiPermitido([40, 60, 40]);
     const el = document.getElementById('hero-kill-message');
     const textEl = document.getElementById('hero-kill-text');
     if (!el || !textEl) return;
-    
+    if (typeof window.animationsEnabled === 'boolean' && !window.animationsEnabled) {
+      el.classList.remove('hero-kill-aliado', 'hero-kill-enemigo');
+      const text = document.getElementById('hero-kill-text');
+      if (text) text.textContent = tipo === 'aliado' ? 'Aliado Asesinado' : 'Enemigo Eliminado';
+      el.classList.add(tipo === 'aliado' ? 'hero-kill-aliado' : 'hero-kill-enemigo');
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 1500);
+      return;
+    }
     // Screen shake fuerte
     if (typeof Animations !== 'undefined') {
       Animations.heavyScreenShake();
@@ -1158,20 +1172,29 @@ const UI = {
 
   // Animar victoria con efectos premium
   animarVictoria(cb) {
+    if (typeof window.vibrarSiPermitido === 'function') window.vibrarSiPermitido([100, 50, 100]);
+    if (typeof window.animationsEnabled === 'boolean' && !window.animationsEnabled) {
+      if (typeof ParticleSystem !== 'undefined' && ParticleSystem.enabled !== false) ParticleSystem.victoryBurst(window.innerWidth / 2, window.innerHeight / 2);
+      if (cb) cb();
+      return;
+    }
     if (typeof Animations !== 'undefined') {
       Animations.victoryAnimation(cb);
     } else if (cb) {
       cb();
     }
-    
-    // Partículas de victoria
-    if (typeof ParticleSystem !== 'undefined') {
+    if (typeof ParticleSystem !== 'undefined' && ParticleSystem.enabled !== false) {
       ParticleSystem.victoryBurst(window.innerWidth / 2, window.innerHeight / 2);
     }
   },
 
   // Animar derrota con efectos premium
   animarDerrota(cb) {
+    if (typeof window.vibrarSiPermitido === 'function') window.vibrarSiPermitido([150, 80, 150]);
+    if (typeof window.animationsEnabled === 'boolean' && !window.animationsEnabled) {
+      if (cb) cb();
+      return;
+    }
     if (typeof Animations !== 'undefined') {
       Animations.defeatAnimation(cb);
     } else if (cb) {
