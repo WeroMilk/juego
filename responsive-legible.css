@@ -1,0 +1,176 @@
+/**
+ * Dioses en Guerra - Legibilidad 100% y Responsive 100%
+ * Garantiza texto legible y uso correcto del espacio en TODOS los dispositivos.
+ * Carga al final para tener prioridad donde haga falta.
+ */
+
+/* ========== BASE GLOBAL ========== */
+html {
+  font-size: clamp(15px, 2vw, 18px) !important;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-width: 280px;
+  overflow-x: hidden;
+}
+
+/* Contraste mínimo en texto */
+.screen.active,
+#menu-screen.active,
+#game-screen.active,
+.modal-content,
+.game-chat-panel,
+.board-horizontal {
+  color: #f0ede8;
+}
+
+/* ========== TARGETS TÁCTILES (44px mínimo) ========== */
+@media (max-width: 900px) {
+  .action-btn,
+  .menu-btn,
+  .diff-btn,
+  .btn-settings,
+  .btn-surrender,
+  .hand-nav,
+  .mode-card,
+  .menu-btn-hero,
+  .selection-options .card-option,
+  #btn-end-turn,
+  #btn-volver-menu,
+  #btn-settings-close {
+    min-height: 44px !important;
+    min-width: 44px;
+  }
+}
+
+/* ========== MÓVIL MUY ESTRECHO (320px - 360px) ========== */
+@media (max-width: 360px) {
+  html { font-size: 15px !important; }
+  
+  .game-title { font-size: 1.1rem !important; }
+  .game-subtitle { font-size: 0.75rem !important; }
+  
+  .board-horizontal .hidden-row-label { font-size: 0.8rem !important; }
+  .board-horizontal .player-name { font-size: 0.9rem !important; }
+  .card-hero .nombre, .card-mini .nombre { font-size: 0.75rem !important; }
+  .board-horizontal .hidden-slot .card-mini .nombre,
+  .board-horizontal .hidden-slot .card-soporte .nombre { font-size: 0.7rem !important; }
+  
+  .board-horizontal .game-footer .action-btn { font-size: 0.78rem !important; }
+  #turn-number-label, #turn-label, #actions-left { font-size: 0.85rem !important; }
+  .game-chat-title { font-size: 0.9rem !important; }
+  .game-chat-messages { font-size: 0.85rem !important; }
+  
+  .modal-content h2, .modal-content h3 { font-size: 1.15rem !important; }
+  .modal-content p, .reglas-texto { font-size: 0.9rem !important; }
+  .selection-options .card-option { font-size: 0.85rem !important; }
+}
+
+/* 320px explícito (iPhone SE 1ª gen, etc.) */
+@media (max-width: 320px) {
+  html { font-size: 15px !important; }
+  .game-title { font-size: 1rem !important; }
+  .game-subtitle { font-size: 0.7rem !important; }
+  .menu-btn { font-size: 0.9rem !important; padding: 0.7rem 0.9rem !important; }
+  .board-horizontal .game-footer .action-btn { font-size: 0.75rem !important; }
+  .game-chat-messages { font-size: 0.82rem !important; }
+}
+
+/* ========== MODALES Y SELECTION: SIEMPRE LEGIBLES ========== */
+.modal-content,
+.modal .settings-content,
+.modal .gameover-content {
+  max-width: min(95vw, 480px);
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-content h2,
+.settings-title { font-size: clamp(1.1rem, 4vw, 1.5rem) !important; }
+
+.modal-content h3,
+.settings-section-title { font-size: clamp(1rem, 3vw, 1.25rem) !important; }
+
+.setting-label,
+.modal-content p,
+.reglas-texto { font-size: clamp(0.9rem, 2vw, 1rem) !important; }
+
+.selection-options .card-option {
+  font-size: clamp(0.85rem, 2vw, 1rem) !important;
+  padding: 0.6rem 1rem !important;
+}
+
+/* ========== GAME SCREEN: SCROLL SEGURO ========== */
+#game-screen.active {
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-screen-full {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-screen-full .board-horizontal {
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-chat-messages {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ========== MENÚ: SCROLL Y LEGIBILIDAD ========== */
+#menu-screen.active {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  align-items: flex-start;
+  padding-bottom: 2rem;
+}
+
+.menu-content {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ========== SAFE AREA (NOTCHES / BARRA ESTADO) ========== */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  .game-header {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+  }
+  .game-chat-panel {
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+  .menu-content {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+  }
+}
+
+/* ========== LANDSCAPE MÓVIL: MÍNIMOS LEGIBLES ========== */
+@media (max-height: 450px) and (orientation: landscape) {
+  .game-chat-title { font-size: 0.85rem !important; }
+  .game-chat-messages { font-size: 0.82rem !important; }
+  #turn-number-label, #turn-label, #actions-left { font-size: 0.82rem !important; }
+  .board-horizontal .hidden-row-label { font-size: 0.75rem !important; }
+}
+
+/* ========== TABLET Y ESCRITORIO: LÍMITES MÁXIMOS ========== */
+@media (min-width: 901px) {
+  .game-screen-full .board-horizontal {
+    max-width: 100%;
+  }
+}

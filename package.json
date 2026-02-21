@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "serve -p 3000"
+    "start": "serve -p 3000",
+    "simulaciones": "node run_simulacion_1000.js"
   },
   "devDependencies": {
     "serve": "^14.2.4"

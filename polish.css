@@ -63,7 +63,7 @@ body {
   bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: var(--border-gold-dim);
   letter-spacing: 0.1em;
   white-space: nowrap;
@@ -75,7 +75,7 @@ body {
   bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.55rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   white-space: nowrap;
@@ -108,13 +108,13 @@ body {
   transition: all 0.25s ease;
 }
 
-/* Botón primario más destacado */
+/* Botón primario más destacado: cuando brilla amarillo, letras blancas */
 .action-btn.primary {
   background: linear-gradient(180deg, 
     rgba(232, 197, 71, 0.15) 0%, 
     rgba(232, 197, 71, 0.05) 100%);
   border: 2px solid var(--border-gold);
-  color: var(--gold-bright);
+  color: #fff !important;
   box-shadow: 
     inset 0 1px 0 rgba(232, 197, 71, 0.3),
     0 0 15px rgba(232, 197, 71, 0.2);
@@ -124,6 +124,7 @@ body {
   background: linear-gradient(180deg, 
     rgba(232, 197, 71, 0.25) 0%, 
     rgba(232, 197, 71, 0.1) 100%);
+  color: #fff !important;
   box-shadow: 
     inset 0 1px 0 rgba(232, 197, 71, 0.4),
     0 0 25px rgba(232, 197, 71, 0.35),
@@ -543,7 +544,7 @@ body {
   bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: #ef4444;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -574,7 +575,7 @@ body {
   
   .deck-pile::after,
   .discard-pile::after {
-    font-size: 0.5rem;
+    font-size: 0.65rem;
     bottom: -14px;
   }
   

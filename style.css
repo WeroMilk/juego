@@ -469,20 +469,25 @@ body {
 .select-mazo {
   font-family: var(--font-body);
   font-weight: 600;
-  background: linear-gradient(180deg, #2a2518 0%, #1a160c 100%);
+  background: #000 !important;
   border: 2px solid var(--border-gold-dim);
-  color: var(--text-primary);
+  color: #fff !important;
   padding: 0.4rem 0.6rem;
   border-radius: 4px;
   min-width: 110px;
   font-size: 0.9em;
   letter-spacing: 0.04em;
-  box-shadow: inset 0 1px 0 rgba(232, 197, 71, 0.1), 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 .select-mazo:hover, .select-mazo:focus {
   border-color: var(--border-gold);
   outline: none;
 }
+.select-mazo option {
+  background: #000 !important;
+  color: #fff !important;
+}
+.mazo-label { color: #fff !important; }
 .diff-btn {
   font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 1rem);
@@ -544,6 +549,46 @@ body {
 .modal.hidden {
   display: none;
 }
+
+/* Toast: notificaciones no bloqueantes (nivel profesional) */
+.game-toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+  max-width: min(90vw, 420px);
+}
+.game-toast {
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(20, 18, 28, 0.95);
+  border: 1px solid rgba(232, 197, 71, 0.35);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.game-toast--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.game-toast--error {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(30, 20, 20, 0.97);
+}
+.game-toast--success {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(20, 35, 25, 0.95);
+}
+
 .modal-content {
   background: linear-gradient(180deg, #1e1a14 0%, #16120e 30%, #100d0a 100%);
   border: 3px solid var(--border-gold);
@@ -551,6 +596,7 @@ body {
   padding: 2rem 2.25rem;
   max-width: 90vw;
   max-height: 85vh;
+  min-height: 0;
   overflow-y: auto;
   position: relative;
   box-shadow:
@@ -678,6 +724,28 @@ body {
   font-size: clamp(1rem, 1.8vw, 1.15rem);
 }
 .reglas-texto p { margin-bottom: 0.6rem; }
+
+/* Modal de reglas: título y botón fijos, solo el texto hace scroll dentro del box */
+#reglas-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+}
+#reglas-modal .modal-content h2 {
+  flex-shrink: 0;
+}
+#reglas-modal .reglas-texto {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+  padding-right: 0.25rem;
+}
+#reglas-modal .modal-content .menu-btn {
+  flex-shrink: 0;
+}
 
 .logros-lista, .misiones-lista {
   margin-bottom: 1.5rem;
@@ -976,7 +1044,7 @@ body {
   padding: 4px 6px;
   min-width: 0;
   width: 58px;
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -1062,7 +1130,7 @@ body {
   padding: 4px 6px;
   min-width: 0;
   width: 58px;
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -1384,6 +1452,7 @@ body {
 .board-horizontal .hidden-row-label {
   font-size: 0.7rem;
   color: var(--text-secondary);
+  white-space: nowrap;
   margin-bottom: 2px;
   width: 100%;
   text-align: center;
@@ -1676,8 +1745,8 @@ body {
   50% { opacity: 0.85; }
 }
 .hero-slot.atacante-elegido {
-  border-color: var(--border-gold);
-  box-shadow: 0 0 14px rgba(232, 197, 71, 0.5);
+  border-color: rgba(239, 68, 68, 0.9);
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
 }
 .hand-slot.seleccionable {
   cursor: pointer;
@@ -2017,6 +2086,7 @@ body {
   border-radius: 4px;
   letter-spacing: 0.05em;
   box-shadow: inset 0 1px 0 rgba(232, 197, 71, 0.1), 0 2px 8px rgba(0,0,0,0.25);
+  white-space: nowrap;
 }
 .action-btn:hover:not(:disabled) {
   border-color: var(--border-gold);
@@ -2032,7 +2102,7 @@ body {
 }
 .action-btn.primary {
   border-color: var(--border-gold);
-  color: var(--border-gold);
+  color: #fff !important;
 }
 .action-btn.secondary {
   border-color: var(--border-silver);
@@ -2211,8 +2281,14 @@ body {
   color: var(--text-primary);
   font-family: var(--font-body);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
   box-shadow: inset 0 1px 0 rgba(232, 197, 71, 0.12), 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
 }
 .selection-options .card-option:hover {
   border-color: var(--border-gold);
@@ -2392,7 +2468,7 @@ body {
 
 /* Móvil horizontal / tablet pequeña */
 @media (max-width: 768px) {
-  html { font-size: clamp(13px, 1.8vw, 16px); }
+  html { font-size: clamp(15px, 2vw, 18px); }
   .game-screen-full .board-horizontal,
   #game-screen .board.board-horizontal,
   #game-screen.active .board.board-horizontal {
@@ -2414,12 +2490,12 @@ body {
   .board-horizontal .hero-slot .energy-mini-card {
     width: 14px;
     height: 18px;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
   }
   .board-horizontal .hero-slot .facedown-mini-card {
     width: 14px;
     height: 18px;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
   }
   .board-horizontal .hand-slot {
     width: clamp(36px, 5vw, 48px);
@@ -2429,8 +2505,29 @@ body {
     width: clamp(36px, 5vw, 48px);
     height: clamp(46px, 6.5vh, 60px);
   }
-  .board-horizontal .hidden-row-label,
-  .board-horizontal .player-name { font-size: 0.65rem; }
+  .board-horizontal .hidden-row-label {
+    font-size: 0.9rem !important;
+    opacity: 1 !important;
+    color: #fff !important;
+    font-weight: 600;
+  }
+  .board-horizontal .player-name {
+    font-size: 1rem !important;
+    color: #fff !important;
+  }
+  .board-horizontal .hero-slot .card-hero .nombre,
+  .card-hero .nombre { font-size: 0.85rem !important; }
+  .board-horizontal .hero-slot .card-hero .stats,
+  .board-horizontal .hero-slot .card-hero .stats * { font-size: 0.8rem !important; }
+  .board-horizontal .hidden-slot .card-mini .nombre,
+  .board-horizontal .hidden-slot .card-soporte .nombre {
+    font-size: 0.8rem !important;
+  }
+  .board-horizontal .hidden-slot .card-soporte .tipo,
+  .board-horizontal .hidden-slot .card-mini .tipo {
+    font-size: 0.7rem !important;
+    color: rgba(255,255,255,0.9) !important;
+  }
   .board-horizontal .center-zone { padding: 0.4rem; gap: 0.5rem; }
   .board-horizontal .deck-pile,
   .board-horizontal .discard-pile {
@@ -2443,9 +2540,23 @@ body {
     gap: 0.35rem;
   }
   .board-horizontal .game-footer .action-btn {
-    font-size: 0.75rem;
-    padding: 0.45rem 0.5rem;
+    font-size: 0.88rem;
+    padding: 0.5rem 0.55rem;
     min-height: 44px;
+    font-weight: 600;
+    color: #fff;
+  }
+  #turn-number-label, #turn-label, #actions-left {
+    font-size: 0.95rem !important;
+    color: #fff !important;
+  }
+  .game-chat-title { font-size: 1rem !important; color: #fff !important; }
+  .game-chat-messages { font-size: 0.95rem !important; color: rgba(255,255,255,0.95) !important; line-height: 1.5; }
+  .game-chat-input::placeholder { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+  .board-horizontal .deck-pile, .board-horizontal .discard-pile {
+    font-size: 0.9rem !important;
+    font-weight: 700;
+    color: #fff;
   }
   .board-horizontal .hand-nav {
     width: 26px;
@@ -2487,7 +2598,6 @@ body {
   }
   .game-chat-panel { height: auto; min-height: 33vh; min-height: 33dvh; }
   .game-chat-messages { flex: 1; min-height: 60px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .game-chat-title, .game-chat-messages { font-size: 0.8rem; }
   .setup-zones { grid-template-columns: 1fr; gap: 0.75rem; }
   .setup-content { max-width: 100%; }
   .setup-cards { height: 90px; max-height: 90px; }
@@ -2546,12 +2656,12 @@ body {
   .board-horizontal .hero-slot .energy-mini-card {
     width: 12px;
     height: 15px;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
   }
   .board-horizontal .hero-slot .facedown-mini-card {
     width: 10px;
     height: 14px;
-    font-size: 0.5rem;
+    font-size: 0.65rem;
   }
   .board-horizontal .hand-slot {
     width: clamp(32px, 12vw, 42px);
@@ -2561,29 +2671,42 @@ body {
     width: clamp(28px, 10vw, 38px);
     height: clamp(34px, 10vh, 44px);
   }
-  .card-hero .nombre, .card-mini .nombre { font-size: 0.65rem; }
-  .card-emoji { font-size: clamp(0.75rem, 3.5vw, 1rem); }
+  .board-horizontal .hidden-row-label { font-size: 0.85rem !important; color: #fff !important; opacity: 1 !important; }
+  .board-horizontal .player-name { font-size: 0.95rem !important; color: #fff !important; }
+  .card-hero .nombre, .card-mini .nombre { font-size: 0.8rem !important; }
+  .board-horizontal .hero-slot .card-hero .stats,
+  .board-horizontal .hero-slot .card-hero .stats * { font-size: 0.75rem !important; }
+  .board-horizontal .hidden-slot .card-mini .nombre,
+  .board-horizontal .hidden-slot .card-soporte .nombre { font-size: 0.75rem !important; }
+  .board-horizontal .hidden-slot .card-soporte .tipo,
+  .board-horizontal .hidden-slot .card-mini .tipo { font-size: 0.65rem !important; color: #fff !important; }
+  .card-emoji { font-size: clamp(0.85rem, 4vw, 1.1rem); }
   .board-horizontal .game-footer .action-btn {
-    font-size: 0.7rem;
-    padding: 0.4rem 0.35rem;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.4rem;
     min-height: 42px;
+    color: #fff;
+    font-weight: 600;
   }
   .board-horizontal .deck-pile,
   .board-horizontal .discard-pile {
     width: 36px;
     height: 48px;
-    font-size: 0.7rem;
+    font-size: 0.85rem !important;
+    font-weight: 700;
+    color: #fff;
   }
   .game-header { padding: 0.35rem 0.5rem; }
-  #turn-number-label, #turn-label { font-size: 0.75rem; }
-  #actions-left { font-size: 0.75rem; }
+  #turn-number-label, #turn-label { font-size: 0.9rem !important; color: #fff !important; }
+  #actions-left { font-size: 0.9rem !important; color: #fff !important; }
   .game-chat-panel { height: 140px; min-height: 100px; }
-  .game-chat-messages { font-size: 0.65rem; padding: 0.25rem; }
+  .game-chat-title { font-size: 0.95rem !important; color: #fff !important; }
+  .game-chat-messages { font-size: 0.9rem !important; color: rgba(255,255,255,0.95) !important; padding: 0.35rem; }
   .setup-cards { height: 80px; max-height: 80px; }
   .setup-pool .setup-card-item,
   .setup-cards .setup-card-item {
     width: 48px;
-    font-size: 0.55rem;
+    font-size: 0.65rem;
   }
   .setup-pool .setup-card-item .card-emoji,
   .setup-cards .setup-card-item .card-emoji { font-size: 0.75rem; }
@@ -2623,7 +2746,7 @@ body {
   .board-horizontal .hero-slot .energy-mini-card {
     width: 11px;
     height: 14px;
-    font-size: 0.5rem;
+    font-size: 0.6rem;
   }
   .board-horizontal .hand-slot {
     width: clamp(28px, 16vw, 38px);
@@ -2633,8 +2756,16 @@ body {
     width: clamp(24px, 14vw, 34px);
     height: clamp(30px, 12vh, 40px);
   }
+  .board-horizontal .hidden-row-label { font-size: 0.8rem !important; color: #fff !important; }
+  .board-horizontal .player-name { font-size: 0.9rem !important; color: #fff !important; }
+  .card-hero .nombre, .card-mini .nombre { font-size: 0.75rem !important; }
+  .board-horizontal .hidden-slot .card-mini .nombre,
+  .board-horizontal .hidden-slot .card-soporte .nombre { font-size: 0.7rem !important; }
+  .board-horizontal .game-footer .action-btn { font-size: 0.78rem; min-height: 40px; color: #fff; font-weight: 600; }
+  #turn-number-label, #turn-label, #actions-left { font-size: 0.85rem !important; color: #fff !important; }
+  .game-chat-title { font-size: 0.9rem !important; color: #fff !important; }
+  .game-chat-messages { font-size: 0.85rem !important; color: rgba(255,255,255,0.95) !important; }
   .game-chat-panel { height: 130px; min-height: 95px; }
-  .board-horizontal .game-footer .action-btn { font-size: 0.65rem; min-height: 40px; }
   .modal-content { padding: 0.75rem; margin: 0.35rem; }
 }
 
@@ -2645,7 +2776,10 @@ body {
   .board-horizontal .hero-slot .hero-energy-stack { padding: 1px 2px 0; }
   .board-horizontal .hand-slot { height: clamp(40px, 16vh, 52px); }
   .game-chat-panel { height: 95px; min-height: 75px; }
-  .game-chat-messages { font-size: 0.65rem; }
+  .game-chat-title { font-size: 0.9rem !important; color: #fff !important; }
+  .game-chat-messages { font-size: 0.85rem !important; color: rgba(255,255,255,0.95) !important; }
+  .board-horizontal .hidden-row-label { font-size: 0.8rem !important; color: #fff !important; }
+  #turn-number-label, #turn-label, #actions-left { font-size: 0.85rem !important; color: #fff !important; }
 }
 
 /* Mejor uso del espacio en pantallas grandes */

@@ -577,10 +577,9 @@ const Game = {
       resultado.efectoEspecial = { tipo: 'electrocutar', heroe: heroeDefensor.nombre, turnos: 2 };
     }
 
-    // Lucifer: el jugador que controla a Lucifer elige 1 carta de la mano del rival para quemar (se hace desde UI).
+    // Lucifer: ningún efecto debe afectar cartas de la mano ni del mazo (desactivado).
     if (heroeAtacante.habilidadId === 'lucifer_ataque') {
-      resultado.luciferQuemar = true;
-      resultado.efectoEspecial = { tipo: 'quemar_carta' };
+      resultado.luciferQuemar = false;
     }
     // Centauro: destruye 1 energía de un héroe del oponente
     if (heroeAtacante.habilidadId === 'centauro_ataque') {

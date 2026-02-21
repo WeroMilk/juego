@@ -986,6 +986,28 @@ const UI = {
     });
   },
 
+  /**
+   * Muestra un mensaje breve tipo toast (no bloqueante). Ideal para errores de jugada o avisos.
+   * @param {string} mensaje - Texto a mostrar
+   * @param {string} tipo - 'error' | 'info' | 'success'
+   * @param {number} duracionMs - Tiempo visible (default 3500)
+   */
+  showToast(mensaje, tipo = 'info', duracionMs = 3500) {
+    const container = document.getElementById('game-toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'game-toast game-toast--' + (tipo === 'error' ? 'error' : tipo === 'success' ? 'success' : 'info');
+    toast.setAttribute('role', 'alert');
+    toast.textContent = mensaje;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('game-toast--visible'));
+    const t = setTimeout(() => {
+      toast.classList.remove('game-toast--visible');
+      setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, duracionMs);
+    toast._timeout = t;
+  },
+
   mostrarGameOver(ganador, rendido = false) {
     const modal = document.getElementById('gameover-modal');
     const title = document.getElementById('gameover-title');

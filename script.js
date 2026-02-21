@@ -85,7 +85,7 @@
           if (heroSlotEl) UI.animarCuracion(heroSlotEl);
         }
       } else {
-        alert(result.msg || 'No se pudo usar el efecto.');
+        if (typeof UI !== 'undefined' && UI.showToast) UI.showToast(result.msg || 'No se pudo usar el efecto.', 'error'); else alert(result.msg || 'No se pudo usar el efecto.');
       }
     }
     if (necesitaHeroe && heroesAliados.length > 0) {
@@ -114,7 +114,7 @@
       }
     });
     if (opciones.length === 0) {
-      alert('No tienes cartas de efecto usables (curación, visión, robo o antídoto en mano o en soporte).');
+      if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('No tienes cartas de efecto usables (curación, visión, robo o antídoto en mano o en soporte).', 'info'); else alert('No tienes cartas de efecto usables (curación, visión, robo o antídoto en mano o en soporte).');
       return;
     }
     UI.mostrarModalSeleccion('Elige un efecto a usar', opciones, (opt) => { if (opt) ejecutarOpcionEfecto(opt); });
@@ -1224,7 +1224,7 @@
       sel = UI.obtenerSetupSeleccionado();
     } catch (e) {
       console.error('Error al obtener setup:', e);
-      alert('Error al leer la configuración. Vuelve a intentarlo.');
+      if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('Error al leer la configuración. Vuelve a intentarlo.', 'error'); else alert('Error al leer la configuración. Vuelve a intentarlo.');
       return;
     }
     if (!sel || sel.heroes.length !== 2 || sel.bocaAbajo.length !== 3 || sel.mano.length !== 3) {
@@ -1251,7 +1251,7 @@
         }
         if (esModoVsIA()) {
           if (typeof IA === 'undefined' || typeof IA.elegirSetup !== 'function') {
-            alert('Error: el módulo de IA no está cargado. Comprueba que ia.js esté en la carpeta.');
+            if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('Error: el módulo de IA no está cargado. Comprueba que ia.js esté en la carpeta.', 'error'); else alert('Error: el módulo de IA no está cargado. Comprueba que ia.js esté en la carpeta.');
             if (overlay) overlay.classList.remove('hidden');
             return;
           }
@@ -1274,7 +1274,7 @@
     } catch (err) {
       console.error('Error en confirmarSetup:', err);
       if (overlay) overlay.classList.remove('hidden');
-      alert('Error al iniciar la partida: ' + (err.message || err));
+      if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('Error al iniciar la partida: ' + (err.message || err), 'error'); else alert('Error al iniciar la partida: ' + (err.message || err));
     }
   }
 
@@ -1392,7 +1392,7 @@
       UI.pedirObjetivoAtaque(actor, (defensorSlot) => {
         if (defensorSlot == null) return;
         const result = Game.atacar(actor, atacanteSlot, defensorSlot);
-        if (!result.ok) { alert(result.msg || 'No se puede atacar'); return; }
+        if (!result.ok) { if (typeof UI !== 'undefined' && UI.showToast) UI.showToast(result.msg || 'No se puede atacar', 'error'); else alert(result.msg || 'No se puede atacar'); return; }
         if (typeof GameLog !== 'undefined' && result.atacanteNombre) {
           if (result.bloqueado) GameLog.addBlockedDamage(result.atacanteJugador, result.atacanteNombre, result.defensorNombre, result.danoBloqueado);
           else if (result.dano != null) GameLog.addDamage(result.atacanteJugador, result.atacanteNombre, result.defensorNombre, result.dano);
@@ -1537,8 +1537,10 @@
       if (typeof UI !== 'undefined' && UI.detenerEfectosAmbiente) UI.detenerEfectosAmbiente();
       if (typeof ParticleSystem !== 'undefined') ParticleSystem.stopAmbientParticles();
       
-      UI.mostrarGameOver(s.ganador, false);
-      const msgEl = document.getElementById('gameover-message');
+      // Mostrar modal tras un breve delay para que se vean partículas y sonido (sensación profesional)
+      setTimeout(function () {
+        UI.mostrarGameOver(s.ganador, false);
+        var msgEl = document.getElementById('gameover-message');
       if (msgEl) {
         if (s.modo === 'campania' && s.ganador === 'player' && typeof Progresion !== 'undefined') {
           Progresion.desbloquearNivelCampania((s.nivelCampania || 0) + 1);
@@ -1563,12 +1565,13 @@
         }
       }
       if (typeof Progresion !== 'undefined' && Progresion.finPartida) {
-        const opciones = { dificultad: s.dificultad, modo: s.modo };
+        var opciones = { dificultad: s.dificultad, modo: s.modo };
         if (s.olaSurvival != null) opciones.olaSurvival = s.olaSurvival;
         if (s.desafioId) opciones.desafioId = s.desafioId;
-        const res = Progresion.finPartida(s.ganador, opciones);
-        setTimeout(() => notificarProgresion(res), 800);
+        var res = Progresion.finPartida(s.ganador, opciones);
+        setTimeout(function () { notificarProgresion(res); }, 800);
       }
+      }, 1100);
     }
   }
 
@@ -1618,7 +1621,28 @@
     }
     if (!s || s.turnoActual !== 'rival' || s.ganador) return;
 
+    var turnLabelEl = document.getElementById('turn-label');
+    if (turnLabelEl) turnLabelEl.textContent = ' Rival pensando...';
     quitarResaltadoIA();
+
+    if (s.accionesRestantes < 1) {
+      Game.terminarTurno();
+      UI.renderizarTablero();
+      comprobarGanador();
+      return;
+    }
+
+    var accionesRival = [];
+    try {
+      accionesRival = Game.getAccionesPosibles('rival') || [];
+    } catch (e) {}
+    var soloPasar = accionesRival.length === 0 || (accionesRival.length === 1 && accionesRival[0].tipo === 'terminar_turno');
+    if (soloPasar) {
+      Game.terminarTurno();
+      UI.renderizarTablero();
+      comprobarGanador();
+      return;
+    }
 
     if (s.turnoPerdido && s.turnoPerdido.rival > 0) {
       Game.terminarTurno();
